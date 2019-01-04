@@ -1,0 +1,45 @@
+
+<style>
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #e7e7e7;
+      background-color: #f3f3f3;
+    }
+    
+    li {
+      float: left;
+    }
+    
+    li a {
+      display: block;
+      color: #666;
+      text-align: center;
+      padding: 4px 45px;
+      text-decoration: none;
+    }
+    
+    li a:hover:not(.active) {
+      background-color: #ddd;
+    }
+    
+    li a.active {
+      color: white;
+      background-color: #4CAF50;
+    }
+    </style>
+<div class="row">
+    <ul>
+        <li><a ng-show="token != null" ui-sref="home.list">List</a></li>
+        <li><a ng-show="token != null" ui-sref="home.createPost">Create</a></li>
+        <li class="pull-right"><a ng-show="token == null" ui-sref="login">Log In</a></li>
+        <li class="pull-right"><a ng-show="token == null" ui-sref="register">Register</a></li>
+        <li class="pull-right"><a ng-show="token != null" ng-click="logOut()">Log Out</a></li>
+      </ul>
+  </div>
+
+  <div class="col-sm-12">
+        <ui-view></ui-view>
+</div>

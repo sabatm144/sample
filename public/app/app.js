@@ -1,0 +1,1 @@
+var sampleApp = angular.module('fb', ['ui.router', 'ui.bootstrap']);

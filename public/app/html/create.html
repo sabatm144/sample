@@ -1,0 +1,37 @@
+<div class="col-sm-12">
+        <form ng-submit="postContent(contentData)">
+            <div>
+            
+            <div>
+                <h4>Select to create Article/Post</h4>
+                <input  type="checkbox" ng-model="contentData.isALink">
+            </div>
+                
+            <div>
+                <label>Title</label>
+                <input type="text" ng-model="contentData.title">
+            </div>
+
+            <div ng-show="contentData.isALink">
+                <label>Article Link</label>
+                <input type="text" ng-model="contentData.link">
+            </div>
+
+            <div ng-show="!contentData.isALink">
+                <label>Description</label>
+                <input type="text" ng-model="contentData.description">
+            </div>
+             
+            <div class="col-sm-12">
+                <div class="form-actions">
+                            <!-- <a class="btn btn-small btn-danger" ng-click="cancel()">{{staticTexts.cancel || 'Cancel'}}</a> -->
+                        <button type="submit" class="btn btn-small btn-success">
+                                <!-- <i class="fa fa-spinner fa-spin"></i> -->
+                        <span ng-if="!contentData.id">Save</span>
+                        <span ng-if="contentData.id">Update</span>
+                        </button>
+                </div>
+            </div>
+            </div>
+        </form>
+    </div>

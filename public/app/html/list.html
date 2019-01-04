@@ -1,0 +1,16 @@
+<div class="col-sm-4">
+        <div ng-repeat="content in contents">
+         
+          <ul ng-show="content.isALink">
+          <label><a href="{{content.link}}">{{content.title}}</a></label>
+          <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
+          <a href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
+          </ul>
+
+          <ul ng-show="!content.isALink">
+              <label><a ng-click="displayContentDesc(content.description)">{{content.title}}</a></label>
+              <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
+              <a  href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
+          </ul>
+        </div>
+</div>
