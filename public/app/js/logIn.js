@@ -24,4 +24,8 @@ sampleApp.controller('logInCtrl', function($state, $scope, $http) {
             console.log("USER REGISTRATION ERROR: ", response)
         });;
     }   
+
+    $scope.cancel = function() {
+        $state.go("home.list")
+    }
 });

@@ -64,8 +64,8 @@
             </div>
 
             <div class="pull-right">
-                <span><a ng-show="!content.vote" ng-click="updateVote(content)">Like</a></span>
-                <span><a ng-show="content.vote" ng-click="updateVote(content)">DisLike</a></span>
+                <span><a ng-click="updateVote(content, true)">Like</a></span>
+                <span><a ng-click="updateVote(content, false)">DisLike</a></span>
                 <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
                 <a  href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
             </div> 

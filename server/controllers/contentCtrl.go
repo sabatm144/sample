@@ -144,73 +144,6 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, e)
 }
 
-func LikeContent(w http.ResponseWriter, r *http.Request) {
-
-	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
-	log.Printf("LoggedIn UserID %s", userID)
-
-	db := dbCon.CopyMongoDB()
-	defer db.Session.Close()
-
-	e := appErr{}
-	//User is present or n't
-	userIns := models.User{}
-	err := db.C("users").FindId(userID).One(&userIns)
-	if err != nil {
-		e = appErr{Message: "User not found", Error: err.Error()}
-		renderJSON(w, http.StatusNotFound, e)
-		return
-	}
-
-	params := r.Context().Value("params").(httprouter.Params)
-	id := params.ByName("id")
-	log.Printf("Content ID %s", id)
-
-	contentIns := models.Content{}
-
-	if !parseJSON(w, r.Body, &contentIns) {
-		return
-	}
-	vote := contentIns.Vote
-	err = db.C("contents").FindId(bson.ObjectIdHex(id)).One(&contentIns)
-	if err != nil {
-		e = appErr{Message: "User not found", Error: err.Error()}
-		renderJSON(w, http.StatusNotFound, e)
-		return
-	}
-
-	contentIns.Vote = vote
-	err = db.C("contents").Update(bson.M{"_id": contentIns.ID}, &contentIns)
-	if err != nil {
-		e = appErr{Message: "Could n't update/insert vote!", Error: err.Error()}
-		renderJSON(w, http.StatusBadRequest, e)
-		return
-	}
-
-	log.Println(contentIns.Vote)
-
-	vIns := models.Voter{}
-	db.C("votes").Find(bson.M{"contentID": contentIns.ID, "userID": contentIns.UserID}).One(&vIns)
-
-	log.Println(vIns)
-	vIns.Status = contentIns.Vote
-	if vIns.ID.Hex() == "" {
-		vIns.ID = bson.NewObjectId()
-		vIns.ContentID = contentIns.ID
-		vIns.UserID = contentIns.UserID
-	}
-
-	_, err = db.C("votes").UpsertId(vIns.ID, bson.M{"contentID": vIns.ContentID, "userID": vIns.UserID, "status": vIns.Status})
-	if err != nil {
-		e = appErr{Message: "Could n't update/insert vote!", Error: err.Error()}
-		renderJSON(w, http.StatusBadRequest, e)
-		return
-	}
-
-	e = appErr{Message: "Status Updated!"}
-	renderJSON(w, http.StatusOK, e)
-}
-
 func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
@@ -256,6 +189,11 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 func ListComments(w http.ResponseWriter, r *http.Request) {
 
+	if bson.IsObjectIdHex(r.Context().Value("loggedInUserId").(string)) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		return	
+	}
+
 	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
 	log.Printf("LoggedIn UserID %s", userID)
 
@@ -273,6 +211,11 @@ func ListComments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := r.Context().Value("params").(httprouter.Params)
+	if bson.IsObjectIdHex(params.ByName("id")) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid ID")
+		return	
+	}
+
 	contentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s %s", contentID)
 

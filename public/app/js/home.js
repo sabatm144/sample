@@ -127,20 +127,25 @@ $scope.countComments = function(contentID) {
       });
     };
 
-$scope.updateVote = function(contentData) {
-  contentData.vote = !contentData.vote
-  console.log(contentData.vote)
+$scope.updateVote = function(contentData, Value) {
+
+  var statusIns = {
+    "status": Value
+  }
+  console.log(contentData, status)
   var config = {
     headers : {
       Authorization: localStorage.getItem("sample_user_token")
     }
   }
-    $http.put('/likeContent/' + contentData.id, contentData, config).then(function successCallback(response) {
+
+  $http.put('/likeContent/' + contentData.id, statusIns, config).then(function successCallback(response) {
       console.log("SUCCESS: ", response)
       $scope.countLikes(contentData.id)
       }, function errorCallback(response) {
           console.log("ERROR: ", response)
-      });
+  });
+
 };
 
 $scope.countLikes = function(contentID) {
