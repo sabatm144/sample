@@ -1,1 +1,1 @@
-var sampleApp = angular.module('fb', ['ui.router', 'ui.bootstrap']);
+var sampleApp = angular.module('fb', ['ui.router', 'ui.bootstrap', 'ngAnimate', 'ngSanitize']);

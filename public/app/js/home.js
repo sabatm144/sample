@@ -160,11 +160,13 @@ $scope.countLikes = function(contentID) {
       console.log("LIKE SUCCESS: ", response)
       $scope.dLikeCount = response.data.noOfDisLikes
       $scope.likeCount = response.data.noOfLikes
-      console.log("LIKE SUCCESS: ", $scope.likeCount)
-      console.log("LIKE SUCCESS: ", $scope.dLikeCount)
-
+      $scope.postID = response.data.contentID
       }, function errorCallback(response) {
           console.log("LIKE ERROR: ", response)
       });
     };
+
+   
+
+
 });

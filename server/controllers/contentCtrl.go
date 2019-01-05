@@ -189,7 +189,7 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 func ListComments(w http.ResponseWriter, r *http.Request) {
 
-	if bson.IsObjectIdHex(r.Context().Value("loggedInUserId").(string)) {
+	if !bson.IsObjectIdHex(r.Context().Value("loggedInUserId").(string)) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return	
 	}
@@ -211,7 +211,7 @@ func ListComments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := r.Context().Value("params").(httprouter.Params)
-	if bson.IsObjectIdHex(params.ByName("id")) {
+	if !bson.IsObjectIdHex(params.ByName("id")) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid ID")
 		return	
 	}

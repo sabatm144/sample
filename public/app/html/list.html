@@ -8,8 +8,8 @@
             </div>
 
             <div class="pull-right">
-                <span><a ng-show="!content.vote" ng-click="updateVote(content)">Like</a></span>
-                <span><a ng-show="content.vote" ng-click="updateVote(content)">DisLike</a></span>
+                <span><a ng-click="updateVote(content, true)">Like</a></span>
+                <span><a ng-click="updateVote(content, false)">DisLike</a></span>
               <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
               <a href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
             </div>
@@ -47,14 +47,9 @@
                   </div>
                   
                 </div>
-                <h6 ng-if="dLikeCount>0" ng-init="countLikes(content.id)">{{dLikeCount}}&nbsp;Dislikes</h6>
-                <h6 ng-if="likeCount>0" ng-init="countLikes(content.id)">{{likeCount}}&nbsp;Likes</h6>
+                <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && dLikeCount>0">{{dLikeCount}}&nbsp;Dislikes</h6>
+                <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && likeCount>0">{{likeCount}}&nbsp;Likes</h6>
               </div>
-  
-              <div class="pull-right">
-                  <a ng-init="countLikes(content.id)">Likes</a>
-              </div> 
-
           </div>
 
           <div class="col-sm-12" ng-show="!content.isALink">
@@ -103,10 +98,12 @@
                 </div>
                 
               </div>
-              <h6 ng-show="dLikeCount>0" ng-init="countLikes(content.id)">{{dLikeCount}}&nbsp;Dislikes</h6>
-              <h6 ng-show="likeCount>0" ng-init="countLikes(content.id)">{{likeCount}}&nbsp;Likes</h6>
+              <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && dLikeCount>0">{{dLikeCount}}&nbsp;Dislikes</h6>
+              <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && likeCount>0">{{likeCount}}&nbsp;Likes</h6>
             </div>
+
           </div>
+        </div>
 
         </div>
 </div>
