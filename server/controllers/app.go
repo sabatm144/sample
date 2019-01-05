@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -29,6 +30,7 @@ func parseJSON(w http.ResponseWriter, params io.ReadCloser, data interface{}) bo
 	}
 
 	err := json.NewDecoder(params).Decode(data)
+	log.Println(err)
 	if err == nil {
 		return true
 	}

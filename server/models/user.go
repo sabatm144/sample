@@ -7,7 +7,6 @@ type User struct {
 	Name     string        `json:"name" bson:"name"`
 	EmailID  string        `json:"emailID" bson:"emailID"`
 	Password string        `json:"-" bson:"password"`
-	Vote     bool          `josn:"voted" bson:"vote"`
 }
 
 // Login provides struct for user credentails
@@ -25,8 +24,8 @@ type LoggedInUser struct {
 }
 
 type Voter struct {
-	ID        bson.ObjectId `json:"id"`
-	ContentID bson.ObjectId `json:"contentID"`
-	UserID    bson.ObjectId `json:"userID"`
-	Status    bool          `json:"status"`
+	ID        bson.ObjectId `json:"id" bson:"_id"`
+	ContentID bson.ObjectId `json:"contentID" bson:"contentID"`
+	UserID    bson.ObjectId `json:"userID" bson:"userID"`
+	Status    bool          `json:"status" bson:"status"`
 }

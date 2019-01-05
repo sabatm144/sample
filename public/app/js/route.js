@@ -13,7 +13,7 @@ function routeConfig($urlRouterProvider, $stateProvider) {
     }).state('home', {
         url: "^/home",
         controller: "homeCtrl",
-        templateUrl: app_dir + "home.html"
+        templateUrl: app_dir + "home.html",
     }).state("home.createPost", {
         url: "^/create",
         controller: "createCtrl",
@@ -33,8 +33,30 @@ function routeConfig($urlRouterProvider, $stateProvider) {
     }).state("home.list", {
         url: "^/list",
         controller: "homeCtrl",
-        templateUrl: app_dir + "list.html"
+        templateUrl: app_dir + "list.html",
     })
 }
 
 sampleApp.config(routeConfig);
+
+function getContent($http, $stateParams, $q) {
+    var deferred = $q.defer();
+    if (!$stateParams.id) {
+        deferred.reject();
+        return
+    }
+    var config = {
+      headers : {
+        Authorization: localStorage.getItem("sample_user_token")
+      }
+    }
+    $http.get('content/'+ $stateParams.id, config).then(function successCallback(content) {
+      console.log(content.data)
+        deferred.resolve(content.data);
+    }, function (error) {
+        if (error.status === 401) deferred.reject("sessionExpired");
+    });
+  
+    return deferred.promise;
+  }
+  getContent.$inject = ["$http", "$stateParams", "$q"];

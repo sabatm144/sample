@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"context"
 	"encoding/json"
 	"log"
@@ -11,6 +10,8 @@ import (
 	"test_2/server/authentication"
 	controller "test_2/server/controllers"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
@@ -95,7 +96,7 @@ func tokenCustomerAuthentication(next http.Handler) http.Handler {
 		if err == nil && token.Valid {
 			c := token.Claims.(jwt.MapClaims)
 			id := c["id"].(string)
-			
+
 			if !bson.IsObjectIdHex(id) {
 				renderERROR(w)
 				return
@@ -131,7 +132,12 @@ func HTTPRouteConfig() *httprouter.Router {
 	router.GET("/content/:id", wrapHandler(userhandler.ThenFunc(controller.GetContent)))
 	router.POST("/createContent", wrapHandler(userhandler.ThenFunc(controller.CreateContent)))
 	router.PUT("/editContent/:id", wrapHandler(userhandler.ThenFunc(controller.UpdateContent)))
+	router.PUT("/likeContent/:id", wrapHandler(userhandler.ThenFunc(controller.LikeContent)))
 	router.DELETE("/deleteContent/:id", wrapHandler(userhandler.ThenFunc(controller.DeleteContent)))
+	router.PUT("/comment/:id", wrapHandler(userhandler.ThenFunc(controller.NestedComments)))
+	router.GET("/totalComments/:id", wrapHandler(userhandler.ThenFunc(controller.ListComments)))
+	router.GET("/countVotes/:id", wrapHandler(userhandler.ThenFunc(controller.CountVotes)))
+
 
 	return router
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"test_2/server/dbCon"
@@ -145,6 +144,73 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, e)
 }
 
+func LikeContent(w http.ResponseWriter, r *http.Request) {
+
+	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
+	log.Printf("LoggedIn UserID %s", userID)
+
+	db := dbCon.CopyMongoDB()
+	defer db.Session.Close()
+
+	e := appErr{}
+	//User is present or n't
+	userIns := models.User{}
+	err := db.C("users").FindId(userID).One(&userIns)
+	if err != nil {
+		e = appErr{Message: "User not found", Error: err.Error()}
+		renderJSON(w, http.StatusNotFound, e)
+		return
+	}
+
+	params := r.Context().Value("params").(httprouter.Params)
+	id := params.ByName("id")
+	log.Printf("Content ID %s", id)
+
+	contentIns := models.Content{}
+
+	if !parseJSON(w, r.Body, &contentIns) {
+		return
+	}
+	vote := contentIns.Vote
+	err = db.C("contents").FindId(bson.ObjectIdHex(id)).One(&contentIns)
+	if err != nil {
+		e = appErr{Message: "User not found", Error: err.Error()}
+		renderJSON(w, http.StatusNotFound, e)
+		return
+	}
+
+	contentIns.Vote = vote
+	err = db.C("contents").Update(bson.M{"_id": contentIns.ID}, &contentIns)
+	if err != nil {
+		e = appErr{Message: "Could n't update/insert vote!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+
+	log.Println(contentIns.Vote)
+
+	vIns := models.Voter{}
+	db.C("votes").Find(bson.M{"contentID": contentIns.ID, "userID": contentIns.UserID}).One(&vIns)
+
+	log.Println(vIns)
+	vIns.Status = contentIns.Vote
+	if vIns.ID.Hex() == "" {
+		vIns.ID = bson.NewObjectId()
+		vIns.ContentID = contentIns.ID
+		vIns.UserID = contentIns.UserID
+	}
+
+	_, err = db.C("votes").UpsertId(vIns.ID, bson.M{"contentID": vIns.ContentID, "userID": vIns.UserID, "status": vIns.Status})
+	if err != nil {
+		e = appErr{Message: "Could n't update/insert vote!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+
+	e = appErr{Message: "Status Updated!"}
+	renderJSON(w, http.StatusOK, e)
+}
+
 func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
@@ -188,83 +254,7 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, e)
 }
 
-type voteError struct {
-	Message string `json:"message"`
-	Err     string `json:"error,omitempty"`
-}
-
-func (v *voteError) Error() string {
-	return fmt.Sprintf("%s: %s", v.Message, v.Err)
-}
-
-func getVoteCount(like string, userID, contentID bson.ObjectId) (int, error) {
-
-	db := dbCon.CopyMongoDB()
-	defer db.Session.Close()
-
-	voterIns := models.Voter{}
-	votequery := bson.M{"userID": userID, "contentID": contentID, "status": false}
-	e := &voteError{}
-
-	if like == "1" {
-		err := db.C("votes").Find(votequery).One(&voterIns)
-		if err != nil {
-			e.Message = "Voter not found"
-			e.Err = err.Error()
-			return 0, e
-		}
-
-		if voterIns.ID.Hex() != "" {
-			voterIns.Status = true
-			err = db.C("votes").UpdateId(voterIns.ID, &voterIns)
-			if err != nil {
-				e.Message = "Voter not updated"
-				e.Err = err.Error()
-				return 0, e
-			}
-		}
-
-		votequery["status"] = true
-		count, countErr := db.C("votes").Find(votequery).Count()
-		if countErr != nil {
-			e.Message = "Could count Votes"
-			e.Err = err.Error()
-			return 0, e
-		}
-
-		return count, nil
-	} else {
-		votequery["status"] = true
-		err := db.C("votes").Find(votequery).One(&voterIns)
-		if err != nil {
-			e.Message = "Voter not found"
-			e.Err = err.Error()
-			return 0, e
-		}
-
-		if voterIns.ID.Hex() != "" {
-			voterIns.Status = false
-			err = db.C("votes").UpdateId(voterIns.ID, &voterIns)
-			if err != nil {
-				e.Message = "Vote not updated"
-				e.Err = err.Error()
-				return 0, err
-			}
-		}
-
-		votequery["status"] = false
-		count, countErr := db.C("votes").Find(votequery).Count()
-		if countErr != nil {
-			e.Message = "Could not count votes"
-			e.Err = err.Error()
-			return 0, e
-		}
-
-		return count, nil
-	}
-}
-
-func VoteContent(w http.ResponseWriter, r *http.Request) {
+func ListComments(w http.ResponseWriter, r *http.Request) {
 
 	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
 	log.Printf("LoggedIn UserID %s", userID)
@@ -284,13 +274,20 @@ func VoteContent(w http.ResponseWriter, r *http.Request) {
 
 	params := r.Context().Value("params").(httprouter.Params)
 	contentID := bson.ObjectIdHex(params.ByName("id"))
-	like := params.ByName("like")
-	log.Printf("Content ID %s %s", contentID, like)
+	log.Printf("Content ID %s %s", contentID)
 
-	res := make(map[string]int)
-	res["noOfLikes"], err = getVoteCount(like, userID, contentID)
-	res["noOfDisLikes"], err = getVoteCount(like, userID, contentID)
-	renderJSON(w, http.StatusNotFound, res)
+	comments := []models.Comment{}
+	err = db.C("comments").Find(bson.M{"contentID": contentID}).All(&comments)
+	if err != nil {
+		e = appErr{Message: "Couldn't find comments!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+
+	res := make(map[string]interface{})
+	res["commentList"] = comments
+	res["comments"] = len(comments)
+	renderJSON(w, http.StatusOK, res)
 	return
 }
 
@@ -314,20 +311,24 @@ func NestedComments(w http.ResponseWriter, r *http.Request) {
 
 	params := r.Context().Value("params").(httprouter.Params)
 	contentID := bson.ObjectIdHex(params.ByName("id"))
-	log.Printf("Content ID %s %s", contentID)
+	log.Printf("Content ID %s", contentID)
+
 	type commentDesc struct {
 		Text      string        `json:"text" bson:"text"`
-		CommentID bson.ObjectId `json:"commentID" json:"commentID"`
+		CommentID bson.ObjectId `json:"id,omitempty" bson:"id,omitempty"`
+		// ChildID bson.ObjectId `json:"childID,omitempty" bson:"childID,omitempty"`
 	}
 	commentIns := commentDesc{}
-
 	if !parseJSON(w, r.Body, &commentIns) {
 		return
 	}
 
+	log.Println(commentIns.CommentID, contentID)
 	nestedComments := &models.Comment{}
-	if commentIns.CommentID.Hex() != "" {
+	if commentIns.CommentID != "" {
 		nestedComments.IsAParent = true
+
+		//parent level
 		err := db.C("comments").Find(bson.M{"_id": commentIns.CommentID, "contentID": contentID}).One(nestedComments)
 		if err != nil {
 			e = appErr{Message: "Could n't update user post!", Error: err.Error()}
@@ -335,6 +336,7 @@ func NestedComments(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		log.Println(nestedComments)
 		if nestedComments.ID.Hex() != "" {
 			nestedComments.IsAParent = true
 			childComments := models.Comment{}
@@ -344,15 +346,21 @@ func NestedComments(w http.ResponseWriter, r *http.Request) {
 			childComments.Text = commentIns.Text
 			nestedComments.Child = append(nestedComments.Child, childComments)
 		}
-
-		if nestedComments.ID.Hex() == "" {
-			nestedComments.ID = bson.NewObjectId()
-			nestedComments.ContentID = contentID
-			nestedComments.UserID = userID
-			nestedComments.Text = commentIns.Text
-		}
 	}
 
-	renderJSON(w, http.StatusNotFound, nestedComments)
+	if commentIns.CommentID == "" {
+		nestedComments.ID = bson.NewObjectId()
+		nestedComments.ContentID = contentID
+		nestedComments.UserID = userID
+		nestedComments.Text = commentIns.Text
+	}
+
+	_, err = db.C("comments").UpsertId(nestedComments.ID, &nestedComments)
+	if err != nil {
+		e = appErr{Message: "Could n't update/insert user comment!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+	renderJSON(w, http.StatusOK, "Comment posted successfully")
 	return
 }
