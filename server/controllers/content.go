@@ -23,12 +23,10 @@ func getVoteCount(status  bool, contentID bson.ObjectId) (int) {
 }
 
 func formContent(contents []models.Content) {
-
 	for idx := range contents {
 		contents[idx].Like = getVoteCount(true, contents[idx].ID)
 		contents[idx].DisLike = getVoteCount(false, contents[idx].ID)
 	}
-
 }
 
 //Contents returns the contents with paginated
@@ -53,6 +51,7 @@ func Contents(w http.ResponseWriter, r *http.Request) {
 
 	total, _ := db.C("contents").Count()
 
+	formContent(contents)
 	result := struct {
 		Contents    []models.Content `json:"contents"`
 		Total       int              `json:"total"`
@@ -61,7 +60,7 @@ func Contents(w http.ResponseWriter, r *http.Request) {
 	}{
 		contents, total, page, limit,
 	}
-	formContent(contents)
+	
 	renderJSON(w, http.StatusOK, result)
 }
 
@@ -105,6 +104,8 @@ func GetContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println(contentIns)
+	contentIns.Like = getVoteCount(true, contentIns.ID)
+	contentIns.DisLike = getVoteCount(false, contentIns.ID)
 	renderJSON(w, http.StatusOK, contentIns)
 }
 
@@ -154,7 +155,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
 	if !bson.IsObjectIdHex(ID) {
-		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		renderJSON(w, http.StatusNotFound, "Not a valid user ID")
 		return
 	}
 	userID := bson.ObjectIdHex(ID)
@@ -176,7 +177,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 	params := r.Context().Value("params").(httprouter.Params)
 	contentID := params.ByName("id")
 	if !bson.IsObjectIdHex(contentID) {
-		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		renderJSON(w, http.StatusNotFound, "Not a valid content ID")
 		return
 	}
 	log.Printf("Content ID %s", contentID)
@@ -185,24 +186,21 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	text := contentIns.Description
-	err = db.C("contents").FindId(bson.ObjectIdHex(contentID)).One(&contentIns)
-	if err != nil {
-		e = appErr{Message: "User not found", Error: err.Error()}
+	count, _ := db.C("contents").FindId(bson.ObjectIdHex(contentID)).Count()
+	if count == 0 {
+		e = appErr{Message: "Content not found", Error: err.Error()}
 		renderJSON(w, http.StatusNotFound, e)
 		return
 	}
-	contentIns.Description = text
-	log.Println(contentIns)
+
 	err = db.C("contents").Update(bson.M{"_id": contentIns.ID, "userID": contentIns.UserID}, &contentIns)
 	if err != nil {
-		e = appErr{Message: "Could n't update user post!", Error: err.Error()}
+		e = appErr{Message: "Could n't update post!", Error: err.Error()}
 		renderJSON(w, http.StatusBadRequest, e)
 		return
 	}
 
-	e = appErr{Message: "Updated!"}
-	renderJSON(w, http.StatusOK, e)
+	renderJSON(w, http.StatusOK, "Post updated successfully!")
 }
 
 func DeleteContent(w http.ResponseWriter, r *http.Request) {
@@ -230,18 +228,20 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 	contentIns := models.Content{}
 	params := r.Context().Value("params").(httprouter.Params)
-	id := params.ByName("id")
-
-	log.Printf("Content ID %s", id)
-	err = db.C("contents").Find(bson.M{"_id": bson.ObjectIdHex(id), "userID": userID}).One(&contentIns)
+	contentID := params.ByName("id")
+	if !bson.IsObjectIdHex(contentID) {
+		renderJSON(w, http.StatusNotFound, "Not a valid content ID")
+		return
+	}
+	log.Printf("Content ID %s", contentID)
+	err = db.C("contents").Find(bson.M{"_id": bson.ObjectIdHex(contentID), "userID": userID}).One(&contentIns)
 	if err != nil {
 		e = appErr{Message: "Could n't find the post specific to user!", Error: err.Error()}
 		renderJSON(w, http.StatusOK, e)
 		return
 	}
 
-	log.Printf("Content Ins ID %s", contentIns)
-
+	log.Printf("ContentIns ID %s", contentIns)
 	err = db.C("contents").RemoveId(contentIns.ID)
 	if err != nil {
 		e = appErr{Message: "Could n't delete!", Error: err.Error()}
@@ -249,6 +249,5 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e = appErr{Message: "Deleted!"}
-	renderJSON(w, http.StatusOK, e)
+	renderJSON(w, http.StatusOK, "Post deleted successfully!")
 }

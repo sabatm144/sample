@@ -50,7 +50,7 @@ $scope.deleteContent = function(id) {
     }
   }).then(function successCallback(response) {
     console.log("DELETE SUCCESS: ", response)
-    alert(response.data.message)
+    alert(response.data)
     $scope.listContents();
     $scope.contents = response.data
     }, function errorCallback(response) {
@@ -109,7 +109,7 @@ $scope.postComment = function(contentID, comment) {
     }
   }
 
-  $http.put('/comment/' + contentID, comment, config).then(function successCallback(response) {
+  $http.put('content/' + contentID + '/comment' + contentID, comment, config).then(function successCallback(response) {
     console.log("COMMENT SUCCESS: ", response)
     $scope.openComment(contentID)
     }, function errorCallback(response) {
@@ -122,7 +122,7 @@ $scope.countComments = function(contentID) {
   console.log(contentID)
     $http({
       method: 'GET',
-      url: '/totalComments/' + contentID,
+      url: 'content/' + contentID + '/comments',
       headers : {
         Authorization: localStorage.getItem("sample_user_token")
       }
@@ -148,7 +148,7 @@ $scope.vote = function(contentData, Value) {
     }
   }
 
-  $http.put('/vote/' + contentData.id, statusIns, config).then(function successCallback(response) {
+  $http.put('content/' + contentData.id + '/vote', statusIns, config).then(function successCallback(response) {
       console.log("SUCCESS: ", response)
       $scope.listContents();
       }, function errorCallback(response) {
@@ -156,5 +156,12 @@ $scope.vote = function(contentData, Value) {
   });
 
 };
+
+$scope.open = function (id) {
+  console.log(id)
+  $state.go("home.showPost", {
+    id: id
+  })
+}
 
 });

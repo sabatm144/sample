@@ -34,6 +34,13 @@ function routeConfig($urlRouterProvider, $stateProvider) {
         url: "^/post",
         controller: "homeCtrl",
         templateUrl: app_dir + "list.html",
+    }).state("home.showPost", {
+        url: "^/show/:id",
+        controller: "showCtrl",
+        templateUrl: app_dir + "show.html",
+        resolve: {
+            'content': getContent
+        }
     })
 }
 

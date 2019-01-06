@@ -134,10 +134,10 @@ func HTTPRouteConfig() *httprouter.Router {
 	router.PUT("/editContent/:id", wrapHandler(userhandler.ThenFunc(controller.UpdateContent)))
 	router.DELETE("/deleteContent/:id", wrapHandler(userhandler.ThenFunc(controller.DeleteContent)))
 
-	router.PUT("/vote/:id", wrapHandler(userhandler.ThenFunc(controller.Vote)))
+	router.PUT("/content/:id/vote", wrapHandler(userhandler.ThenFunc(controller.Vote)))
 
-	router.PUT("/comment/:id", wrapHandler(userhandler.ThenFunc(controller.NestedComments)))
-	router.GET("/totalComments/:id", wrapHandler(userhandler.ThenFunc(controller.ListComments)))
+	router.PUT("/content/:id/comment", wrapHandler(userhandler.ThenFunc(controller.NestedComments)))
+	router.GET("/content/:id/comments", wrapHandler(userhandler.ThenFunc(controller.ListComments)))
 
 
 
