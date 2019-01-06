@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"test_2/server/dbCon"
-	"test_2/server/routes"
+	"sample/server/dbCon"
+	"sample/server/routes"
 	"time"
 
 	"github.com/rs/cors"

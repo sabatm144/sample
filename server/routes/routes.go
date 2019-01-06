@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"test_2/server/authentication"
-	controller "test_2/server/controllers"
+	"sample/server/authentication"
+	controller "sample/server/controllers"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"

@@ -3,8 +3,8 @@ package controller
 import (
 	"log"
 	"net/http"
-	"test_2/server/dbCon"
-	"test_2/server/models"
+	"sample/server/dbCon"
+	"sample/server/models"
 
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"

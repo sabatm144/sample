@@ -3,10 +3,10 @@ package controller
 import (
 	"log"
 	"net/http"
-	"test_2/server/authentication"
-	"test_2/server/dbCon"
-	"test_2/server/models"
-	"test_2/server/utils"
+	"sample/server/authentication"
+	"sample/server/dbCon"
+	"sample/server/models"
+	"sample/server/utils"
 
 	"gopkg.in/mgo.v2/bson"
 )
