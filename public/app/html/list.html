@@ -14,38 +14,6 @@
             </div>
 
             <div class="col-sm-8">
-                <h6 ng-init="countComments(content.id)"><a ng-click="openComment(content)">{{comments}}&nbsp;Comment</a></h6>
-                <div ng-show="showComment">
-                  <input type="text" ng-model="comment.text">
-                  <a ng-href="" ng-click="postComment(content.id, comment)">Add Comment</a>     
-                  
-                  <div ng-repeat="comment in commentList">
-                     <div ng-show="comment.isAParent">
-                        <p>------{{comment.text}}
-                            <span><a href="" ng-click="openNComment(comment.id, $index)">reply</a></span>
-                            <div ng-show="showNComment.index === $index">
-                                <input type="text" ng-model="nComment.text">
-                                <a ng-href="" ng-click="postComment(content.id, nComment)">Post Comment</a>     
-                            </div></p> 
-  
-                        <div ng-repeat="commentChild in comment.child">
-                            --  <p>{{commentChild.text}}</p> 
-                        </div>
-                     </div>
-  
-                     <div ng-show="!comment.isAParent">
-                        <div>
-                            <p>---New---{{comment.text}}
-                            <span><a href="" ng-click="openNComment(comment.id, $index)">reply</a></span>
-                            <div ng-show="showNComment.index === $index">
-                                <input type="text" ng-model="nComment.text">
-                                <a ng-href="" ng-click="postComment(content.id, nComment)">Post Comment</a>     
-                            </div></p> 
-                        </div>
-                     </div>
-                  </div>
-                  
-                </div>
                 <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && dLikeCount>0">{{dLikeCount}}&nbsp;Dislikes</h6>
                 <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && likeCount>0">{{likeCount}}&nbsp;Likes</h6>
               </div>
