@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"test_2/server/dbCon"
@@ -11,42 +10,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type voteError struct {
-	Message string `json:"message"`
-	Err     string `json:"error,omitempty"`
-}
-
-func (v *voteError) Error() string {
-	return fmt.Sprintf("%s: %s", v.Message, v.Err)
-}
-
-func getVoteCount(like string, contentID bson.ObjectId) (int, error) {
-
-	db := dbCon.CopyMongoDB()
-	defer db.Session.Close()
-
-	votequery := bson.M{"contentID": contentID}	
-
-	if like == "1" {
-		//Count
-		votequery["status"] = true
-		count, _ := db.C("votes").Find(votequery).Count()
-		return count, nil
-	} else {
-		votequery["status"] = false
-		count, _ := db.C("votes").Find(votequery).Count()
-		return count, nil
-	}
-}
-
-func CountVotes(w http.ResponseWriter, r *http.Request) {
+func Vote(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
 	if !bson.IsObjectIdHex(ID) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -67,46 +38,7 @@ func CountVotes(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
 		return
 	}
-    contentID := bson.ObjectIdHex(params.ByName("id"))
-	log.Printf("Content ID %s", contentID)
-
-	res := make(map[string]interface{})
-	res["noOfLikes"], err = getVoteCount("1", contentID)
-	res["noOfDisLikes"], err = getVoteCount("", contentID)
-	res["contentID"] = contentID.Hex()
-	renderJSON(w, http.StatusOK, res)
-	return
-}
-
-func LikeContent(w http.ResponseWriter, r *http.Request) {
-
-	ID := r.Context().Value("loggedInUserId").(string)
-	if !bson.IsObjectIdHex(ID) {
-		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
-		return
-	}
-    userID := bson.ObjectIdHex(ID)
-	log.Printf("LoggedIn UserID %s", userID)
-
-	db := dbCon.CopyMongoDB()
-	defer db.Session.Close()
-
-	e := appErr{}
-	//User is present or n't
-	userIns := models.User{}
-	err := db.C("users").FindId(userID).One(&userIns)
-	if err != nil {
-		e = appErr{Message: "User not found", Error: err.Error()}
-		renderJSON(w, http.StatusNotFound, e)
-		return
-	}
-
-	params := r.Context().Value("params").(httprouter.Params)
-	if !bson.IsObjectIdHex(params.ByName("id")) {
-		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
-		return
-	}
-    contentID := bson.ObjectIdHex(params.ByName("id"))
+	contentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s", contentID)
 
 	contentIns := models.Content{}

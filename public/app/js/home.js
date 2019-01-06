@@ -17,19 +17,28 @@ sampleApp.controller('homeCtrl', function($state, $scope, $http) {
   $scope.userID = localStorage.getItem("user");
 
   console.log($scope.token)
-    // List services
-    $scope.listContents = function() {
+  //Pagination
+  $scope.totalItems = 0;
+  $scope.currentPage = 1;
+  $scope.limit = 5;
+ 
+  // List services
+  $scope.listContents = function () {
     $http({
       method: 'GET',
-      url: '/getContents'
+      url: '/getContents?page=' + $scope.currentPage + '&limit=' + $scope.limit
     }).then(function successCallback(response) {
-      $scope.contents = response.data
-      console.log("SUCCESS: ", $scope.contents,  $scope.userID)
-      }, function errorCallback(response) {
-          console.log("ERROR: ", response)
-      });
-    };
-    $scope.listContents();
+      console.log(response)
+      $scope.contents = response.data.contents || []
+      $scope.totalItems = response.data.total || 0;
+      $scope.currentPage = response.data.currentPage || 1;
+      $scope.limit = response.data.limit || 5;
+      console.log("SUCCESS: ", $scope.contents, $scope.userID)
+    }, function errorCallback(response) {
+      console.log("ERROR: ", response)
+    });
+  };
+  $scope.listContents();
 
 //Delete
 $scope.deleteContent = function(id) {
@@ -127,7 +136,7 @@ $scope.countComments = function(contentID) {
       });
     };
 
-$scope.updateVote = function(contentData, Value) {
+$scope.vote = function(contentData, Value) {
 
   var statusIns = {
     "status": Value
@@ -139,34 +148,13 @@ $scope.updateVote = function(contentData, Value) {
     }
   }
 
-  $http.put('/likeContent/' + contentData.id, statusIns, config).then(function successCallback(response) {
+  $http.put('/vote/' + contentData.id, statusIns, config).then(function successCallback(response) {
       console.log("SUCCESS: ", response)
-      $scope.countLikes(contentData.id)
+      $scope.listContents();
       }, function errorCallback(response) {
           console.log("ERROR: ", response)
   });
 
 };
-
-$scope.countLikes = function(contentID) {
-  console.log(contentID)
-    $http({
-      method: 'GET',
-      url: '/countVotes/' + contentID,
-      headers : {
-        Authorization: localStorage.getItem("sample_user_token")
-      }
-    }).then(function successCallback(response) {
-      console.log("LIKE SUCCESS: ", response)
-      $scope.dLikeCount = response.data.noOfDisLikes
-      $scope.likeCount = response.data.noOfLikes
-      $scope.postID = response.data.contentID
-      }, function errorCallback(response) {
-          console.log("LIKE ERROR: ", response)
-      });
-    };
-
-   
-
 
 });

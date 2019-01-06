@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"test_2/server/dbCon"
 	"test_2/server/models"
 
@@ -10,22 +11,58 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func ListContents(w http.ResponseWriter, r *http.Request) {
+
+func getVoteCount(status  bool, contentID bson.ObjectId) (int) {
 
 	db := dbCon.CopyMongoDB()
 	defer db.Session.Close()
 
-	e := appErr{}
-	contents := []models.Content{}
-	err := db.C("contents").Find(bson.M{}).All(&contents)
-	if err != nil {
-		e = appErr{Message: "Contents not found", Error: err.Error()}
-		renderJSON(w, http.StatusNotFound, e)
-		return
+	votequery := bson.M{"contentID": contentID, "status": status}	
+	count, _ := db.C("votes").Find(votequery).Count()
+	return count
+}
+
+func formContent(contents []models.Content) {
+
+	for idx := range contents {
+		contents[idx].Like = getVoteCount(true, contents[idx].ID)
+		contents[idx].DisLike = getVoteCount(false, contents[idx].ID)
 	}
 
-	log.Println(contents)
-	renderJSON(w, http.StatusOK, contents)
+}
+
+//Contents returns the contents with paginated
+func Contents(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 0)
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)
+
+	db := dbCon.CopyMongoDB()
+	defer db.Session.Close()
+
+	if limit == 0 {
+		limit = 5
+	}
+
+	if page == 0 {
+		page = 1
+	}
+	skip := limit * (page - 1)
+
+	contents := []models.Content{}
+	db.C("contents").Find(bson.M{}).Skip(int(skip)).Limit(int(limit)).All(&contents)
+
+	total, _ := db.C("contents").Count()
+
+	result := struct {
+		Contents    []models.Content `json:"contents"`
+		Total       int              `json:"total"`
+		CurrentPage int64            `json:"currentPage"`
+		Limit       int64            `json:"limit"`
+	}{
+		contents, total, page, limit,
+	}
+	formContent(contents)
+	renderJSON(w, http.StatusOK, result)
 }
 
 func GetContent(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +72,7 @@ func GetContent(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -78,7 +115,7 @@ func CreateContent(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -120,7 +157,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -175,7 +212,7 @@ func DeleteContent(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()

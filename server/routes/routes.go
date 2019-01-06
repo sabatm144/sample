@@ -127,16 +127,18 @@ func HTTPRouteConfig() *httprouter.Router {
 	router.POST("/registerUser", wrapHandler(handler.ThenFunc(controller.RegisterUser)))
 	router.POST("/authenticateUser", wrapHandler(handler.ThenFunc(controller.AuthenticateUser)))
 
-	router.GET("/getContents", wrapHandler(handler.ThenFunc(controller.ListContents)))
+	router.GET("/getContents", wrapHandler(handler.ThenFunc(controller.Contents)))
 
 	router.GET("/content/:id", wrapHandler(userhandler.ThenFunc(controller.GetContent)))
 	router.POST("/createContent", wrapHandler(userhandler.ThenFunc(controller.CreateContent)))
 	router.PUT("/editContent/:id", wrapHandler(userhandler.ThenFunc(controller.UpdateContent)))
-	router.PUT("/likeContent/:id", wrapHandler(userhandler.ThenFunc(controller.LikeContent)))
 	router.DELETE("/deleteContent/:id", wrapHandler(userhandler.ThenFunc(controller.DeleteContent)))
+
+	router.PUT("/vote/:id", wrapHandler(userhandler.ThenFunc(controller.Vote)))
+
 	router.PUT("/comment/:id", wrapHandler(userhandler.ThenFunc(controller.NestedComments)))
 	router.GET("/totalComments/:id", wrapHandler(userhandler.ThenFunc(controller.ListComments)))
-	router.GET("/countVotes/:id", wrapHandler(userhandler.ThenFunc(controller.CountVotes)))
+
 
 
 	return router

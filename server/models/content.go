@@ -10,8 +10,9 @@ type Content struct {
 	Title       string        `json:"title" bson:"title"`
 	Description string        `json:"description" bson:"description"`
 	//IsALink: decides whether it's a article link or text post
-	IsALink bool `json:"isALink" bson:"isALink"`
-	Vote    bool `json:"vote" bson:"vote"`
+	IsALink int `json:"isALink" bson:"isALink"`
+	Like    int `json:"like" bson:"-"`
+	DisLike int `json:"dLike" bson:"-"`
 }
 
 //Comment :User comment struct

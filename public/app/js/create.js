@@ -1,16 +1,18 @@
 sampleApp.controller('createCtrl', function($stateParams, $state, $scope, $http, content) { 
 
   console.log("Inside create ctrl")
-    $scope.contentData = content
-
-    console.log("Inside create ctrl")
+  $scope.contentData = content
     //Create/update content
     $scope.postContent = function(contentData) {
+      content.isALink = parseInt(content.isALink)
+
+      console.log(contentData)
         var config = {
           headers : {
             Authorization: localStorage.getItem("sample_user_token")
           }
         }
+        
         if (!$scope.contentData.id) {
           $http.post('/createContent', contentData, config).then(function successCallback(response) {
             console.log("SUCCESS: ", response)
@@ -22,6 +24,7 @@ sampleApp.controller('createCtrl', function($stateParams, $state, $scope, $http,
                 }
             });
         }
+
         if ($scope.contentData.id) {
           $http.put('/editContent/' + $stateParams.id, contentData, config).then(function successCallback(response) {
             console.log("SUCCESS: ", response)
@@ -32,5 +35,8 @@ sampleApp.controller('createCtrl', function($stateParams, $state, $scope, $http,
 
         }
     };
+    $scope.cancel = function() {
+      $state.go("home.list")
+  }
 
 });

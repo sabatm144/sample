@@ -1,5 +1,5 @@
 function routeConfig($urlRouterProvider, $stateProvider) {
-    $urlRouterProvider.when("/", "/list").otherwise("/");
+    $urlRouterProvider.when("/", "/post").otherwise("/");
     var app_dir = "public/app/html/";
 
     $stateProvider.state('login', {
@@ -31,7 +31,7 @@ function routeConfig($urlRouterProvider, $stateProvider) {
             'content': getContent
         }
     }).state("home.list", {
-        url: "^/list",
+        url: "^/post",
         controller: "homeCtrl",
         templateUrl: app_dir + "list.html",
     })

@@ -1,76 +1,54 @@
-<div class="col-sm-4">
-        <div class="row" style="padding: 5px; margin: 2px; border: 1px solid #e7e7e7; background-color: #f3f3f3;" ng-repeat="content in contents">
-          <div class="col-sm-12" ng-show="content.isALink">
+<style>
+    .contents a {
+        color: black;
+        cursor: pointer;
+    }
+</style>
 
-            <div class="col-sm-8">
-            <label><a href="{{content.link}}">{{content.title}}</a></label>
-            </div>
+<div class="col-sm-12 contents">
+    <h3>Posts</h3>
 
-            <div class="pull-right">
-                <span><a ng-click="updateVote(content, true)">Like</a></span>
-                <span><a ng-click="updateVote(content, false)">DisLike</a></span>
-              <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
-              <a href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
-            </div>
+    <div class="text-danger" ng-if="!contents.length">
+        No posts available, Be first to create post :(
+    </div>
 
-            <div class="col-sm-8">
-                <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && dLikeCount>0">{{dLikeCount}}&nbsp;Dislikes</h6>
-                <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && likeCount>0">{{likeCount}}&nbsp;Likes</h6>
-              </div>
-          </div>
-
-          <div class="col-sm-12" ng-show="!content.isALink">
-            
-            <div class="col-sm-8">
-            <label><a ng-click="displayContentDesc(content.description)">{{content.title}}</a></label>
-            </div>
-
-            <div class="pull-right">
-                <span><a ng-click="updateVote(content, true)">Like</a></span>
-                <span><a ng-click="updateVote(content, false)">DisLike</a></span>
-                <a ng-show="content.userID === userID" ui-sref="home.editPost({id: content.id})">Edit</a>
-                <a  href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
-            </div> 
-
-            <div class="col-sm-8">
-              <h6 ng-init="countComments(content.id)"><a ng-click="openComment(content)">{{comments}}&nbsp;Comments</a></h6>
-              <div ng-show="showComment">
-                <input type="text" ng-model="comment.text">
-                <a ng-href="" ng-click="postComment(content.id, comment)">Add Comment</a>     
-                
-                <div ng-repeat="comment in commentList">
-                   <div ng-show="comment.isAParent">
-                      <p>------{{comment.text}}
-                          <span><a href="" ng-click="openNComment(comment.id, $index)">reply</a></span>
-                          <div ng-show="showNComment.index === $index">
-                              <input type="text" ng-model="nComment.text">
-                              <a ng-href="" ng-click="postComment(content.id, nComment)">Post Comment</a>     
-                          </div></p> 
-
-                      <div ng-repeat="commentChild in comment.child">
-                          --  <p>{{commentChild.text}}</p> 
-                      </div>
-                   </div>
-
-                   <div ng-show="!comment.isAParent">
-                      <div>
-                          <p>---New---{{comment.text}}
-                          <span><a href="" ng-click="openNComment(comment.id, $index)">reply</a></span>
-                          <div ng-show="showNComment.index === $index">
-                              <input type="text" ng-model="nComment.text">
-                              <a ng-href="" ng-click="postComment(content.id, nComment)">Post Comment</a>     
-                          </div></p> 
-                      </div>
-                   </div>
-                </div>
-                
-              </div>
-              <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && dLikeCount>0">{{dLikeCount}}&nbsp;Dislikes</h6>
-              <h6 ng-init="countLikes(content.id)" ng-show="postID === content.id && likeCount>0">{{likeCount}}&nbsp;Likes</h6>
-            </div>
-
-          </div>
+    <div class="col-sm-12 well well-sm" ng-repeat="content in contents">
+        <div class="col-sm-8">
+            <span ng-if="!content.isALink">
+                <a ng-click="open(content.id)">
+                    {{content.title}}
+                </a>
+            </span>
+            <span ng-if="content.isALink">
+                <span class="glyphicon glyphicon-link"></span>
+                <a href="{{content.link}}" target="_blank">{{content.title}}</a>
+            </span>
         </div>
-
+        <div class="col-sm-4 text-right">
+            <a ng-click="vote(content, true)">
+                {{content.likes || content.like}}
+                <span class="glyphicon glyphicon-thumbs-up text-success"></span>
+            </a> |
+            <a ng-click="vote(content, false)">
+                {{content.disLikes || content.dLike}}
+                <span class="glyphicon glyphicon-thumbs-down text-danger"></span>
+            </a>
+            <span ng-show="content.userID === userID">| <a ui-sref="home.editPost({id: content.id})">Edit</a> |</span>
+            <a href="" ng-show="content.userID === userID" ng-click="deleteContent(content.id)">Delete</a>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="col-sm-9">
+            <ul uib-pagination total-items="totalItems" ng-model="currentPage" max-size="maxSize" class="pagination-sm"
+                items-per-page="limit" num-pages="numPages" boundary-link-numbers="true" rotate="false" ng-change="listContents()"></ul>
+        </div>
+        <div class="col-sm-2 text-right text-primary" style="padding-top:20px">
+            Page: {{currentPage}} / {{numPages}}
+        </div>
+        <div class="col-sm-1 text-right" style="padding-top:15px">
+            <input type="number" class="form-control" ng-model="limit" ng-change="listContents()">
+        </div>
+    </div>
 </div>

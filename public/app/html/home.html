@@ -1,45 +1,20 @@
-
-<style>
-    ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      border: 1px solid #e7e7e7;
-      background-color: #f3f3f3;
-    }
-    
-    li {
-      float: left;
-    }
-    
-    li a {
-      display: block;
-      color: #666;
-      text-align: center;
-      padding: 4px 45px;
-      text-decoration: none;
-    }
-    
-    li a:hover:not(.active) {
-      background-color: #ddd;
-    }
-    
-    li a.active {
-      color: white;
-      background-color: #4CAF50;
-    }
-    </style>
-<div class="row">
-    <ul>
-        <li><a ng-show="token != null" ui-sref="home.list">List</a></li>
-        <li><a ng-show="token != null" ui-sref="home.createPost">Create</a></li>
-        <li class="pull-right"><a ng-show="token == null" ui-sref="login">Log In</a></li>
-        <li class="pull-right"><a ng-show="token == null" ui-sref="register">Register</a></li>
-        <li class="pull-right"><a ng-show="token != null" ng-click="logOut()">Log Out</a></li>
-      </ul>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">F22 LABS</a>
+    </div>
+    <ul class="nav navbar-nav" ng-if="token">
+      <li><a ui-sref="home.list">List</a></li>
+      <li><a ui-sref="home.createPost">Create</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a ng-if="!token" ui-sref="register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+      <li><a ng-if="!token" ui-sref="login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      <li><a ng-if="token" ng-click="logOut()" style="cursor:pointer">Logout <span class="glyphicon glyphicon-log-out"></span></a></li>
+    </ul>
   </div>
+</nav>
 
-  <div class="col-sm-12">
-        <ui-view></ui-view>
+<div class="col-sm-12" style="padding-top:50px">
+  <ui-view></ui-view>
 </div>
