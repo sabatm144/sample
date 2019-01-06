@@ -41,7 +41,12 @@ func getVoteCount(like string, contentID bson.ObjectId) (int, error) {
 
 func CountVotes(w http.ResponseWriter, r *http.Request) {
 
-	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
+	ID := r.Context().Value("loggedInUserId").(string)
+	if !bson.IsObjectIdHex(ID) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		return
+	}
+    userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -58,8 +63,11 @@ func CountVotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := r.Context().Value("params").(httprouter.Params)
-	contentID := bson.ObjectIdHex(params.ByName("id"))
-
+	if !bson.IsObjectIdHex(params.ByName("id")) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
+		return
+	}
+    contentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s", contentID)
 
 	res := make(map[string]interface{})
@@ -72,7 +80,12 @@ func CountVotes(w http.ResponseWriter, r *http.Request) {
 
 func LikeContent(w http.ResponseWriter, r *http.Request) {
 
-	userID := bson.ObjectIdHex(r.Context().Value("loggedInUserId").(string))
+	ID := r.Context().Value("loggedInUserId").(string)
+	if !bson.IsObjectIdHex(ID) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		return
+	}
+    userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -89,11 +102,15 @@ func LikeContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := r.Context().Value("params").(httprouter.Params)
-	id := params.ByName("id")
-	log.Printf("Content ID %s", id)
+	if !bson.IsObjectIdHex(params.ByName("id")) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
+		return
+	}
+    contentID := bson.ObjectIdHex(params.ByName("id"))
+	log.Printf("Content ID %s", contentID)
 
 	contentIns := models.Content{}
-	err = db.C("contents").FindId(bson.ObjectIdHex(id)).One(&contentIns)
+	err = db.C("contents").FindId(contentID).One(&contentIns)
 	if err != nil {
 		e = appErr{Message: "User not found", Error: err.Error()}
 		renderJSON(w, http.StatusNotFound, e)
