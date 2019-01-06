@@ -15,13 +15,12 @@ type Content struct {
 	DisLike int `json:"dLike" bson:"-"`
 }
 
+
 //Comment :User comment struct
 type Comment struct {
 	ID        bson.ObjectId `json:"id" bson:"_id"`
-	Text      string        `json:"text" bson:"text"`
-	ContentID bson.ObjectId `json:"contentID" bson:"contentID"`
-	UserID    bson.ObjectId `json:"-" bson:"userID"`
-	//IsAParent: decides whether comments has child
-	IsAParent bool      `json:"isAParent" bson:"isAParent"`
-	Child     []Comment `json:"child" bson:"child"`
+	Text      string        `json:"text,omitempty" bson:"text,omitempty"`
+	ContentID bson.ObjectId `json:"contentID,omitempty" bson:"contentID,omitempty"`
+	UserID    bson.ObjectId `json:"-" bson:"userID,omitempty"`
+	Replies     []Comment `json:"replies" bson:"replies"`
 }

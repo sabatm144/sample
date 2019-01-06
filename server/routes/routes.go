@@ -136,10 +136,9 @@ func HTTPRouteConfig() *httprouter.Router {
 
 	router.PUT("/content/:id/vote", wrapHandler(userhandler.ThenFunc(controller.Vote)))
 
-	router.PUT("/content/:id/comment", wrapHandler(userhandler.ThenFunc(controller.NestedComments)))
-	router.GET("/content/:id/comments", wrapHandler(userhandler.ThenFunc(controller.ListComments)))
-
-
+	router.PUT("/content/:id/comment", wrapHandler(userhandler.ThenFunc(controller.Comment)))
+	router.PUT("/comment/:id/reply", wrapHandler(userhandler.ThenFunc(controller.Reply)))
+	router.GET("/content/:id/comments", wrapHandler(userhandler.ThenFunc(controller.Comments)))
 
 	return router
 }

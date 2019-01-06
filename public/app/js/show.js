@@ -2,7 +2,9 @@ sampleApp.controller("showCtrl", function ($scope, content, $http) {
 
     console.log("Inside show ctrl", content)
     $scope.content = content
-    $scope.comments = []
+    $scope.comment = {
+      "text": ""
+    }
    
     $scope.getComments = function (contentID) {
       $http({
@@ -12,7 +14,7 @@ sampleApp.controller("showCtrl", function ($scope, content, $http) {
           Authorization: localStorage.getItem("sample_user_token")
         }
       }).then(function successCallback(response) {
-        $scope.comments = response.data || []
+        $scope.comments = response.data.comments || []
       }, function errorCallback(response) {
         console.log("COUNT ERROR: ", response)
       });
@@ -29,7 +31,9 @@ sampleApp.controller("showCtrl", function ($scope, content, $http) {
    
       $http.put('/content/' + contentID + '/comment', comment, config).then(function successCallback(response) {
         console.log("COMMENT SUCCESS: ", response)
-        $scope.getCommnets(content.id)
+        $scope.getComments(content.id)
+        alert(response.data)
+        $scope.comment.text = ""
       }, function errorCallback(response) {
         console.log("COMMENT ERROR: ", response)
       });
@@ -43,9 +47,9 @@ sampleApp.controller("showCtrl", function ($scope, content, $http) {
         }
       }
    
-      $http.put('/comment/' + commentID + '/comment', comment, config).then(function successCallback(response) {
+      $http.put('/comment/' + commentID + '/reply', comment, config).then(function successCallback(response) {
         console.log("COMMENT SUCCESS: ", response)
-        $scope.getCommnets(content.id)
+        $scope.getComments(content.id)
       }, function errorCallback(response) {
         console.log("COMMENT ERROR: ", response)
       });

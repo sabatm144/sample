@@ -16,38 +16,40 @@
             </div>
         </div>
         <hr>
+        <form name="commentForm" novalidate> 
         <div class="row" style="padding-top:20px">
             <div class="col-sm-12 form-group">
-                <label for="pwd">Comment</label>
-                <textarea class="form-control" rows="5" id="content" ng-model="comment" required></textarea>
+                <label for="pwd">Comment </label>
+                <textarea class="form-control" rows="5" name="comment"  ng-model="comment.text" required>
+                </textarea>
             </div>
             <div class="col-sm-12 text-right">
-                <button class="btn btn-small btn-success" ng-click="postComment(content.id, comment)">
+                <button ng-disabled="!commentForm.comment.$dirty" class="btn btn-small btn-success" ng-click="postComment(content.id, comment)">
                     ADD
                 </button>
-    
             </div>
         </div>
+        </form>
         <hr>
         <div class="row">
             <div class="col-sm-12">
                 <label>Comments</label>
                 <div class="text-danger" ng-if="!comments.length">
-                    No comments available, Be first to comment:(
+                    No comments available, Be first to comment:( {{comments.length}}
                 </div>
             </div>
     
     
-            <div class="col-sm-12" ng-repeat="comment in comment">
+            <div class="col-sm-12" ng-repeat="comment in comments">
                 {{comment.text}}
                 <div class="col-sm-12" style="padding-left:5px" ng-repeat="reply in comment.replies">
-                    {{reply.text}}
+                    replies: {{reply.text}}
                 </div>
                 <div class=“col-sm-12”>
                         <a ng-click="showReply = !showReply" style="cursor:pointer">Reply</a>
                         <div class="col-sm-12" ng-if="showReply">
                             <div class="col-sm-12 form-group">
-                                <textarea class="form-control" ng-model="comment.reply" required></textarea>
+                                <textarea class="form-control" ng-model="reply.text" required></textarea>
                             </div>
                             <div class="col-sm-12 text-right">
                                 <button class="btn btn-small btn-success" ng-click="replyComment(comment.id, reply)">

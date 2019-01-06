@@ -10,7 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func ListComments(w http.ResponseWriter, r *http.Request) {
+func Comments(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
 	if !bson.IsObjectIdHex(ID) {
@@ -50,13 +50,12 @@ func ListComments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := make(map[string]interface{})
-	res["commentList"] = comments
-	res["comments"] = len(comments)
+	res["comments"] = comments
 	renderJSON(w, http.StatusOK, res)
 	return
 }
 
-func NestedComments(w http.ResponseWriter, r *http.Request) {
+func Comment(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
 	if !bson.IsObjectIdHex(ID) {
@@ -90,52 +89,88 @@ func NestedComments(w http.ResponseWriter, r *http.Request) {
 
 	type commentDesc struct {
 		Text      string        `json:"text" bson:"text"`
-		CommentID bson.ObjectId `json:"id,omitempty" bson:"id,omitempty"`
-		// ChildID bson.ObjectId `json:"childID,omitempty" bson:"childID,omitempty"`
+	}
+
+	commentIns := commentDesc{}
+	if !parseJSON(w, r.Body, &commentIns) {
+		return
+	}
+
+	comment := &models.Comment{}
+	comment.ID = bson.NewObjectId()
+	comment.ContentID = contentID
+	comment.UserID = userID
+	comment.Text = commentIns.Text
+	err = db.C("comments").Insert(comment)
+	if err != nil {
+		e = appErr{Message: "Could n't insert user comment!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+	renderJSON(w, http.StatusOK, "Comment posted successfully")
+	return
+}
+
+func Reply(w http.ResponseWriter, r *http.Request) {
+
+	ID := r.Context().Value("loggedInUserId").(string)
+	if !bson.IsObjectIdHex(ID) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
+		return
+	}
+    userID := bson.ObjectIdHex(ID)
+	log.Printf("LoggedIn UserID %s", userID)
+
+	db := dbCon.CopyMongoDB()
+	defer db.Session.Close()
+
+	e := appErr{}
+	//User is present or n't
+	userIns := models.User{}
+	err := db.C("users").FindId(userID).One(&userIns)
+	if err != nil {
+		e = appErr{Message: "User not found", Error: err.Error()}
+		renderJSON(w, http.StatusNotFound, e)
+		return
+	}
+
+	params := r.Context().Value("params").(httprouter.Params)
+	if !bson.IsObjectIdHex(params.ByName("id")) {
+		renderJSON(w, http.StatusBadRequest, "Not a valid commentID ID")
+		return
+	}
+    commentID := bson.ObjectIdHex(params.ByName("id"))
+	log.Printf("Content ID %s", commentID)
+
+
+	type commentDesc struct {
+		Text      string        `json:"text" bson:"text"`
 	}
 	commentIns := commentDesc{}
 	if !parseJSON(w, r.Body, &commentIns) {
 		return
 	}
 
-	log.Println(commentIns.CommentID, contentID)
-	nestedComments := &models.Comment{}
-	if commentIns.CommentID != "" {
-		nestedComments.IsAParent = true
-
-		//parent level
-		err := db.C("comments").Find(bson.M{"_id": commentIns.CommentID, "contentID": contentID}).One(nestedComments)
-		if err != nil {
-			e = appErr{Message: "Could n't update user post!", Error: err.Error()}
-			renderJSON(w, http.StatusBadRequest, e)
-			return
-		}
-
-		log.Println(nestedComments)
-		if nestedComments.ID.Hex() != "" {
-			nestedComments.IsAParent = true
-			childComments := models.Comment{}
-			childComments.ID = bson.NewObjectId()
-			childComments.ContentID = contentID
-			childComments.UserID = userID
-			childComments.Text = commentIns.Text
-			nestedComments.Child = append(nestedComments.Child, childComments)
-		}
-	}
-
-	if commentIns.CommentID == "" {
-		nestedComments.ID = bson.NewObjectId()
-		nestedComments.ContentID = contentID
-		nestedComments.UserID = userID
-		nestedComments.Text = commentIns.Text
-	}
-
-	_, err = db.C("comments").UpsertId(nestedComments.ID, &nestedComments)
+	comment := &models.Comment{}
+	err = db.C("comments").FindId(commentID).One(comment)
 	if err != nil {
-		e = appErr{Message: "Could n't update/insert user comment!", Error: err.Error()}
+		e = appErr{Message: "Could n't find comment!", Error: err.Error()}
 		renderJSON(w, http.StatusBadRequest, e)
 		return
 	}
-	renderJSON(w, http.StatusOK, "Comment posted successfully")
+
+	reply := models.Comment{}
+	reply.ID = bson.NewObjectId()
+	reply.ContentID = comment.ContentID
+	reply.UserID = comment.UserID
+	reply.Text = commentIns.Text
+	comment.Replies = append(comment.Replies, reply)
+	_, err = db.C("comments").UpsertId(commentID, &comment)
+	if err != nil {
+		e = appErr{Message: "Could n't update/insert user reply!", Error: err.Error()}
+		renderJSON(w, http.StatusBadRequest, e)
+		return
+	}
+	renderJSON(w, http.StatusOK, "Reply posted successfully")
 	return
 }
