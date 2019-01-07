@@ -22,10 +22,3 @@ type LoggedInUser struct {
 	Name    string        `json:"firstName" bson:"firstName"`
 	EmailID string        `json:"emailID" bson:"emailID"`
 }
-
-type Voter struct {
-	ID        bson.ObjectId `json:"id" bson:"_id"`
-	ContentID bson.ObjectId `json:"contentID" bson:"contentID"`
-	UserID    bson.ObjectId `json:"userID" bson:"userID"`
-	Status    bool          `json:"status" bson:"status"`
-}

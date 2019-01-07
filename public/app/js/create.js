@@ -26,7 +26,7 @@ sampleApp.controller('createCtrl', function($stateParams, $state, $scope, $http,
         if ($scope.contentData.id) {
           $http.put('/editContent/' + $stateParams.id, contentData, config).then(function successCallback(response) {
             console.log("SUCCESS: ", response)
-            content.isALink = parseInt(content.isALink)
+            content.contentType = parseInt(content.contentType)
             $state.go("home.list")
             }, function errorCallback(response) {
                 console.log("ERROR: ", response)

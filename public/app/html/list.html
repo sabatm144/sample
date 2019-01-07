@@ -14,12 +14,12 @@
 
     <div class="col-sm-12 well well-sm" ng-repeat="content in contents">
         <div class="col-sm-8">
-            <span ng-if="content.isALink == 2">
+            <span ng-if="content.contentType == 2">
                 <a ng-click="open(content.id)">
                     {{content.title}}
                 </a>
             </span>
-            <span ng-if="content.isALink == 1">
+            <span ng-if="content.contentType == 1">
                 <span class="glyphicon glyphicon-link"></span>
                 <a href="{{content.link}}" target="_blank">{{content.title}}</a>
             </span>

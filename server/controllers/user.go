@@ -11,7 +11,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// RegisterUser
+// RegisterUser create new user
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	login := models.Login{}
@@ -64,7 +64,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, resp)
 }
 
-// AuthenticateUser
+// AuthenticateUser used to login
 func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 	login := models.Login{}
 	if !parseJSON(w, r.Body, &login) {

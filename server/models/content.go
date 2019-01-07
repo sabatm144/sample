@@ -9,12 +9,10 @@ type Content struct {
 	Link        string        `json:"link" bson:"link"`
 	Title       string        `json:"title" bson:"title"`
 	Description string        `json:"description" bson:"description"`
-	//IsALink: decides whether it's a article link or text post
-	IsALink string `json:"isALink" bson:"isALink"`
-	Like    int `json:"like" bson:"-"`
-	DisLike int `json:"dLike" bson:"-"`
+	ContentType string        `json:"contentType" bson:"contentType"`
+	Like        int           `json:"like" bson:"-"`
+	DisLike     int           `json:"dLike" bson:"-"`
 }
-
 
 //Comment :User comment struct
 type Comment struct {
@@ -22,5 +20,5 @@ type Comment struct {
 	Text      string        `json:"text,omitempty" bson:"text,omitempty"`
 	ContentID bson.ObjectId `json:"contentID,omitempty" bson:"contentID,omitempty"`
 	UserID    bson.ObjectId `json:"-" bson:"userID,omitempty"`
-	Replies     []Comment `json:"replies" bson:"replies"`
+	Replies   []Comment     `json:"replies" bson:"replies"`
 }

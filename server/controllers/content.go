@@ -3,21 +3,20 @@ package controller
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"sample/server/dbCon"
 	"sample/server/models"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 )
 
-
-func getVoteCount(status  bool, contentID bson.ObjectId) (int) {
+func getVoteCount(status bool, contentID bson.ObjectId) int {
 
 	db := dbCon.CopyMongoDB()
 	defer db.Session.Close()
 
-	votequery := bson.M{"contentID": contentID, "status": status}	
+	votequery := bson.M{"contentID": contentID, "status": status}
 	count, _ := db.C("votes").Find(votequery).Count()
 	return count
 }
@@ -60,10 +59,11 @@ func Contents(w http.ResponseWriter, r *http.Request) {
 	}{
 		contents, total, page, limit,
 	}
-	
+
 	renderJSON(w, http.StatusOK, result)
 }
 
+//GetContent return the content by id
 func GetContent(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -109,6 +109,7 @@ func GetContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, contentIns)
 }
 
+//CreateContent creates a content
 func CreateContent(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -151,6 +152,7 @@ func CreateContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, contentIns)
 }
 
+//UpdateContent update a content
 func UpdateContent(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -203,6 +205,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusOK, "Post updated successfully!")
 }
 
+//DeleteContent deletes the content
 func DeleteContent(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)

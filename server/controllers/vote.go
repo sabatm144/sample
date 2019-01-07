@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//Vote for a content
 func Vote(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -58,7 +59,7 @@ func Vote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vIns := models.Voter{}
+	vIns := models.Vote{}
 	db.C("votes").Find(bson.M{"contentID": contentIns.ID, "userID": userID}).One(&vIns)
 	log.Println(vIns, voteIns.Status)
 

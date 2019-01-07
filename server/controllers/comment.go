@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//Comments returns the comments for a content
 func Comments(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -17,7 +18,7 @@ func Comments(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -38,9 +39,9 @@ func Comments(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
 		return
 	}
-    contentID := bson.ObjectIdHex(params.ByName("id"))
+	contentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s", contentID)
-	
+
 	comments := []models.Comment{}
 	err = db.C("comments").Find(bson.M{"contentID": contentID}).All(&comments)
 	if err != nil {
@@ -55,6 +56,7 @@ func Comments(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//Comment is to add comment for a content
 func Comment(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -62,7 +64,7 @@ func Comment(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -83,12 +85,11 @@ func Comment(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid content ID")
 		return
 	}
-    contentID := bson.ObjectIdHex(params.ByName("id"))
+	contentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s", contentID)
 
-
 	type commentDesc struct {
-		Text      string        `json:"text" bson:"text"`
+		Text string `json:"text" bson:"text"`
 	}
 
 	commentIns := commentDesc{}
@@ -111,6 +112,7 @@ func Comment(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//Reply is to add reply for a comment
 func Reply(w http.ResponseWriter, r *http.Request) {
 
 	ID := r.Context().Value("loggedInUserId").(string)
@@ -118,7 +120,7 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid user ID")
 		return
 	}
-    userID := bson.ObjectIdHex(ID)
+	userID := bson.ObjectIdHex(ID)
 	log.Printf("LoggedIn UserID %s", userID)
 
 	db := dbCon.CopyMongoDB()
@@ -139,12 +141,11 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusBadRequest, "Not a valid commentID ID")
 		return
 	}
-    commentID := bson.ObjectIdHex(params.ByName("id"))
+	commentID := bson.ObjectIdHex(params.ByName("id"))
 	log.Printf("Content ID %s", commentID)
 
-
 	type commentDesc struct {
-		Text      string        `json:"text" bson:"text"`
+		Text string `json:"text" bson:"text"`
 	}
 	commentIns := commentDesc{}
 	if !parseJSON(w, r.Body, &commentIns) {
